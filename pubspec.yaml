@@ -1,0 +1,97 @@
+name: todo_list
+description: "A new Flutter project."
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0-97.0.dev <4.0.0'
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  
+  cupertino_icons: ^1.0.2
+  get: ^4.6.5
+  get_storage: ^2.1.1
+  cloud_firestore: ^4.13.2
+  firebase_core: ^2.23.0
+  intl: ^0.17.0
+  shared_preferences: ^2.0.12
+  flutter_slidable: ^3.0.1
+
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  
+  flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/todo.png"
+  
+
+flutter:
+
+
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/images/
+
+
+  fonts:
+    - family: KantumruyPro
+      fonts:
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-ThinItalic.ttf
+          weight: 100
+          style: italic
+
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-ExtraLightItalic.ttf
+          weight: 200
+          style: italic
+
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-Light.ttf
+          weight: 300
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-LightItalic.ttf
+          weight: 300
+          style: italic
+
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-Italic.ttf
+          weight: 400
+          style: italic
+
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-MediumItalic.ttf
+          weight: 500
+          style: italic
+
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/kantumruy_pro/KantumruyPro-BoldItalic.ttf
+          weight: 700
+          style: italic
+
