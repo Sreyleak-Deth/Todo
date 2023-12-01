@@ -1,11 +1,28 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import 'package:todo_list/view/home/model/todo_list_model.dart';
 
 class TodoListController extends GetxController {
+  TextEditingController titleController = TextEditingController();
+  TextEditingController detailsController = TextEditingController();
+  TextEditingController dateTimeController = TextEditingController();
+  TextEditingController progressController = TextEditingController();
+
   RxList<Todo> todos = <Todo>[].obs;
-  var filteredTodos = <Todo>[].obs;
+  RxList<Todo> filteredTodos = <Todo>[].obs;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  String get selectedProgress => _selectedProgress;
+
+  set selectedProgress(String value) {
+    _selectedProgress = value;
+    update();
+  }
+
+  String _selectedProgress = 'Start';
 
   @override
   void onInit() {
@@ -14,30 +31,53 @@ class TodoListController extends GetxController {
     filterTodos('');
   }
 
-  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  @override
+  void onClose() {
+    titleController.dispose();
+    detailsController.dispose();
+    dateTimeController.dispose();
+    super.onClose();
+  }
 
-  // void saveTodos() {
-  //   final List<Map<String, dynamic>> todosMapList =
-  //       todos.map((todo) => todo.toJson()).toList();
+  void clearTextControllers() {
+    titleController.clear();
+    detailsController.clear();
+    dateTimeController.clear();
+    progressController.clear();
+  }
 
-  //   _firestore.collection('todos').doc('todosDocument').set({
-  //     'todos': todosMapList,
-  //   });
-  // }
+  Future<void> saveTodos() async {
+    try {
+      final List<Map<String, dynamic>> todosMapList =
+          todos.map((todo) => todo.toJson()).toList();
 
-  // Future<void> loadTodos() async {
-  //   final DocumentSnapshot<Map<String, dynamic>> snapshot =
-  //       await _firestore.collection('todos').doc('todosDocument').get();
+      await _firestore.collection('todos').doc('todosDocument').set({
+        'todos': todosMapList,
+      });
+    } catch (e) {
+      print('Error saving todos to Firestore: $e');
+    }
+  }
 
-  //   if (snapshot.exists) {
-  //     final List<Map<String, dynamic>> todosMapList = snapshot.data()!['todos'];
-  //     todos.assignAll(
-  //       todosMapList.map((todoMap) => Todo.fromJson(todoMap)).toList(),
-  //     );
-  //   }
-  // }
+  Future<void> loadTodos() async {
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await _firestore.collection('todos').doc('todosDocument').get();
+
+      if (snapshot.exists) {
+        final List<Map<String, dynamic>> todosMapList =
+            List<Map<String, dynamic>>.from(snapshot.data()!['todos']);
+        todos.assignAll(
+          todosMapList.map((todoMap) => Todo.fromJson(todoMap)).toList(),
+        );
+      }
+    } catch (e) {
+      print('Error loading todos from Firestore: $e');
+    }
+  }
 
   void addTodoWithDetails({
+    required String id,
     required String title,
     required String details,
     required String dateTime,
@@ -46,6 +86,7 @@ class TodoListController extends GetxController {
     final existingTodo = todos.firstWhere(
       (todo) => todo.title == title,
       orElse: () => Todo(
+        id: '',
         title: '',
         details: '',
         dateTime: '',
@@ -55,6 +96,7 @@ class TodoListController extends GetxController {
 
     if (existingTodo.title.isEmpty) {
       final newTodo = Todo(
+        id: id,
         title: title,
         details: details,
         dateTime: dateTime,
@@ -65,7 +107,7 @@ class TodoListController extends GetxController {
       filterTodos('');
       update();
     } else {
-      Future.delayed(Duration.zero, () {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.defaultDialog(
           title: 'Duplicate Item',
           middleText:
@@ -91,28 +133,39 @@ class TodoListController extends GetxController {
     filterTodos('');
   }
 
-  Future<void> saveTodos() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> todosStringList =
-        todos.map((todo) => todo.toJsonString()).toList();
-    prefs.setStringList('todos', todosStringList);
-  }
-
-  Future<void> loadTodos() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String>? todosStringList = prefs.getStringList('todos');
-    if (todosStringList != null) {
-      todos.assignAll(todosStringList.map((todoString) {
-        return Todo.fromJsonString(todoString);
-      }));
-    }
-  }
-
   void filterTodos(String searchText) {
     filteredTodos.assignAll(todos
         .where((todo) =>
             todo.title.toLowerCase().contains(searchText.toLowerCase()))
         .toList());
     update();
+  }
+
+  void selectDateAndTime(
+      BuildContext context, TextEditingController controller) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null) {
+      // ignore: use_build_context_synchronously
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+      if (pickedTime != null) {
+        DateTime selectedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        controller.text =
+            DateFormat('yyyy-MM-dd HH:mm a').format(selectedDateTime);
+      }
+    }
   }
 }

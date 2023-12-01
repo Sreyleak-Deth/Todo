@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:todo_list/core/routes/app_route.dart';
+import 'package:get/get.dart';
 import 'package:todo_list/core/routes/app_route.dart' as appRoute;
+import 'package:todo_list/core/routes/app_route.dart';
 
 class App extends StatelessWidget {
-  const App({
-    Key? key,
-  }) : super(key: key);
+  const App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

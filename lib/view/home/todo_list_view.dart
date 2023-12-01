@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:todo_list/core/theme/theme_color.dart';
 import 'package:todo_list/core/theme/theme_font.dart';
 import 'package:todo_list/core/theme/theme_font_size.dart';
 import 'package:todo_list/view/home/model/todo_list_model.dart';
 import 'package:todo_list/view/home/todo_list_controller.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:todo_list/view/home/widget/todo_edit_view.dart';
 
-// ignore: must_be_immutable
 class TodoListView extends StatelessWidget {
-  TodoListView({Key? key}) : super(key: key);
-
   final TodoListController todoListController = Get.put(TodoListController());
 
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController detailsController = TextEditingController();
-  final TextEditingController dateTimeController = TextEditingController();
-  String selectedProgress = 'Start';
+  TodoListView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +53,7 @@ class TodoListView extends StatelessWidget {
   Widget buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton(
       onPressed: () {
-        titleController.clear();
-        detailsController.clear();
-        dateTimeController.clear();
-        selectedProgress = 'Start';
+        todoListController.clearTextControllers();
 
         showDialog(
           context: context,
@@ -97,132 +87,9 @@ class TodoListView extends StatelessWidget {
     );
   }
 
-  Widget buildTitleField() {
-    return TextFormField(
-      controller: titleController,
-      decoration: InputDecoration(
-        labelText: 'Title',
-        labelStyle: ThemeFontSize.textTheme.titleMedium,
-      ),
-      style: ThemeFontSize.textTheme.titleMedium,
-    );
-  }
-
-  Widget buildDetailsField() {
-    return TextFormField(
-      controller: detailsController,
-      decoration: InputDecoration(
-        labelText: 'Details',
-        labelStyle: ThemeFontSize.textTheme.titleMedium,
-      ),
-      style: ThemeFontSize.textTheme.titleMedium,
-    );
-  }
-
-  Widget buildSaveButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        todoListController.addTodoWithDetails(
-          title: titleController.text,
-          details: detailsController.text,
-          dateTime: dateTimeController.text,
-          progress: selectedProgress,
-        );
-        Navigator.of(context).pop();
-      },
-      child: Text(
-        'Save',
-        style: ThemeFontSize.textTheme.bodyMedium,
-      ),
-    );
-  }
-
-  Widget buildDropdownButton() {
-    return DropdownButtonFormField<String>(
-      value: selectedProgress,
-      style: ThemeFontSize.textTheme.titleMedium,
-      onChanged: (value) {
-        selectedProgress = value!;
-      },
-      items: ['Start', 'In Progress', 'Done'].map((progress) {
-        return DropdownMenuItem<String>(
-          value: progress,
-          child: Text(
-            progress,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              letterSpacing: 0.15,
-              fontFamily: ThemeFont.defaultFontFamily,
-              color: Colors.black,
-            ),
-          ),
-        );
-      }).toList(),
-      decoration: InputDecoration(
-        labelText: 'Status',
-        labelStyle: ThemeFontSize.textTheme.titleMedium,
-      ),
-    );
-  }
-
-  Widget buildDateTimeField(BuildContext context) {
-    return TextFormField(
-      controller: dateTimeController,
-      decoration: InputDecoration(
-        labelText: 'Date and Time',
-        labelStyle: ThemeFontSize.textTheme.titleMedium,
-        prefixIcon: const Icon(
-          Icons.calendar_today,
-          size: 16,
-        ),
-      ),
-      style: ThemeFontSize.textTheme.titleMedium,
-      onTap: () async {
-        DateTime? pickedDate = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2101),
-        );
-        if (pickedDate != null) {
-          // ignore: use_build_context_synchronously
-          TimeOfDay? pickedTime = await showTimePicker(
-            context: context,
-            initialTime: TimeOfDay.now(),
-          );
-          if (pickedTime != null) {
-            DateTime selectedDateTime = DateTime(
-              pickedDate.year,
-              pickedDate.month,
-              pickedDate.day,
-              pickedTime.hour,
-              pickedTime.minute,
-            );
-            dateTimeController.text =
-                DateFormat('yyyy-MM-dd hh:mm a').format(selectedDateTime);
-          }
-        }
-      },
-    );
-  }
-
-  Widget buildSearchField() {
-    return TextField(
-      onChanged: (value) {
-        todoListController.filterTodos(value);
-      },
-      decoration: InputDecoration(
-        labelText: 'Search',
-        prefixIcon: const Icon(Icons.search),
-        errorStyle: ThemeFontSize.textTheme.headlineMedium,
-      ),
-    );
-  }
-
   Widget buildCardList(Todo todo, int index) {
     return Slidable(
-      key: const ValueKey(0),
+      key: ValueKey<int>(index),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         dismissible: DismissiblePane(
@@ -256,6 +123,128 @@ class TodoListView extends StatelessWidget {
     );
   }
 
+  Widget buildTitleField() {
+    return TextFormField(
+      controller: todoListController.titleController,
+      decoration: InputDecoration(
+        labelText: 'Title',
+        labelStyle: ThemeFontSize.textTheme.titleMedium,
+      ),
+      style: ThemeFontSize.textTheme.titleMedium,
+    );
+  }
+
+  Widget buildDetailsField() {
+    return TextFormField(
+      controller: todoListController.detailsController,
+      decoration: InputDecoration(
+        labelText: 'Details',
+        labelStyle: ThemeFontSize.textTheme.titleMedium,
+      ),
+      style: ThemeFontSize.textTheme.titleMedium,
+    );
+  }
+
+  Widget buildSaveButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        todoListController.addTodoWithDetails(
+          id: '',
+          title: todoListController.titleController.text,
+          details: todoListController.detailsController.text,
+          dateTime: todoListController.dateTimeController.text,
+          progress: todoListController.selectedProgress,
+        );
+        Navigator.of(context).pop();
+      },
+      child: Text(
+        'Save',
+        style: ThemeFontSize.textTheme.bodyMedium,
+      ),
+    );
+  }
+
+  Widget buildDropdownButton() {
+    return DropdownButtonFormField<String>(
+      value: todoListController.selectedProgress,
+      style: ThemeFontSize.textTheme.titleMedium,
+      onChanged: (value) {
+        todoListController.selectedProgress = value!;
+      },
+      items: ['Start', 'In Progress', 'Done'].map((progress) {
+        return DropdownMenuItem<String>(
+          value: progress,
+          child: Text(
+            progress,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.15,
+              fontFamily: ThemeFont.defaultFontFamily,
+              color: Colors.black,
+            ),
+          ),
+        );
+      }).toList(),
+      decoration: InputDecoration(
+        labelText: 'Status',
+        labelStyle: ThemeFontSize.textTheme.titleMedium,
+      ),
+    );
+  }
+
+  Widget buildDateTimeField(BuildContext context) {
+    return TextFormField(
+      controller: todoListController.dateTimeController,
+      decoration: InputDecoration(
+        labelText: 'Date and Time',
+        labelStyle: ThemeFontSize.textTheme.titleMedium,
+        prefixIcon: const Icon(
+          Icons.calendar_today,
+          size: 16,
+        ),
+      ),
+      style: ThemeFontSize.textTheme.titleMedium,
+      onTap: () async {
+        BuildContext currentContext = context;
+
+        DateTime? pickedDate = await showDatePicker(
+          context: currentContext,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+        );
+        if (pickedDate != null) {
+          // ignore: use_build_context_synchronously
+          TimeOfDay? pickedTime = await showTimePicker(
+            context: currentContext,
+            initialTime: TimeOfDay.now(),
+          );
+          if (pickedTime != null) {
+            // ignore: use_build_context_synchronously
+            todoListController.selectDateAndTime(
+              currentContext,
+              todoListController.dateTimeController,
+            );
+          }
+        }
+      },
+    );
+  }
+
+  Widget buildSearchField() {
+    return TextField(
+      onChanged: (value) {
+        todoListController.filterTodos(value);
+      },
+      decoration: InputDecoration(
+        labelText: 'Search',
+        prefixIcon: const Icon(Icons.search),
+        errorStyle: ThemeFontSize.textTheme.headlineMedium,
+      ),
+    );
+  }
+
   List<Widget> buildIconButtonEditDelete(Todo todo, int index) {
     return [
       SlidableAction(
@@ -272,14 +261,6 @@ class TodoListView extends StatelessWidget {
         foregroundColor: ThemeColor.surface,
         icon: Icons.edit,
       ),
-      // SlidableAction(
-      //   onPressed: (BuildContext context) {
-      //     todoListController.removeTodo(index);
-      //   },
-      //   backgroundColor: ThemeColor.errorColor,
-      //   foregroundColor: ThemeColor.surface,
-      //   icon: Icons.delete,
-      // ),
       SlidableAction(
         onPressed: (BuildContext context) {
           showDialog(
